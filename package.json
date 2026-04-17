@@ -6,7 +6,10 @@
     "start": "next start",
     "lint": "eslint .",
     "import:scraptik": "node scripts/import-scraptik-user-posts.mjs",
-    "import:instagram-reels": "node scripts/import-instagram-reels.mjs"
+    "import:instagram-reels": "node scripts/import-instagram-reels.mjs",
+    "import:instagram-account": "node scripts/import-instagram-account.mjs",
+    "import:tiktok-account": "node scripts/import-tiktok-account.mjs",
+    "import:accounts-social-media": "node scripts/import-accounts-social-media.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",

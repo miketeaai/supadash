@@ -22,8 +22,9 @@
  *   NOT NULL columns, e.g. {"sms":"yes","other_flag":1}
  *
  * Usage:
- *   node scripts/import-scraptik-user-posts.mjs <user_id> [options]
- *   npm run import:scraptik -- <user_id> ...
+ *   node scripts/import-scraptik-user-posts.mjs <tiktok_user_id> [options]
+ *   npm run import:scraptik -- <tiktok_user_id> ...
+ *   <tiktok_user_id> is the same value as accounts.tiktok_id (decimal string if very large).
  *
  * Options:
  *   --campaign=<string>   default ""
@@ -176,7 +177,8 @@ function validateRow(row) {
 
 async function fetchUserPostsPage(userId, { count, maxCursor, region, apiKey, host }) {
   const url = new URL(`https://${host}/user-posts`);
-  url.searchParams.set("user_id", userId);
+  /** TikTok user ids can exceed Number.MAX_SAFE_INTEGER — always send as string. */
+  url.searchParams.set("user_id", String(userId));
   url.searchParams.set("count", String(count));
   url.searchParams.set("max_cursor", String(maxCursor));
   url.searchParams.set("region", region);
@@ -218,11 +220,12 @@ async function main() {
   const notNullDefaults = mergedNotNullDefaults();
 
   const { positional, flags } = parseArgs(process.argv.slice(2));
-  const userId = positional[0];
+  const userId =
+    positional[0] != null ? String(positional[0]).trim() : "";
 
   if (!userId) {
     console.error(
-      "Usage: node scripts/import-scraptik-user-posts.mjs <user_id> [--campaign=] [--region=GB] [--count=50] [--max-pages=N] [--dry-run] [--insert-only] [--delay-ms=600]"
+      "Usage: node scripts/import-scraptik-user-posts.mjs <tiktok_user_id> [--campaign=] [--region=GB] [--count=50] [--max-pages=N] [--dry-run] [--insert-only] [--delay-ms=600]"
     );
     process.exit(1);
   }
@@ -255,6 +258,8 @@ async function main() {
   }
 
   const supabase = dryRun ? null : createClient(supabaseUrl, supabaseKey);
+
+  console.error(`Scraptik user-posts user_id=${userId}`);
 
   let maxCursor = 0;
   const allRows = [];

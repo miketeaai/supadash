@@ -50,7 +50,7 @@ async function DashboardContent() {
 
   // Fetch ALL user stats
   const { data: allUsers } = await supabase
-    .from("users")
+    .from("accounts")
     .select("followers, likes, saves, videos");
 
   // Fetch ALL post metrics including campaign and cost

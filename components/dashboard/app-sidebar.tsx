@@ -25,6 +25,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { DataProfileSwitcher } from "@/components/dashboard/data-profile-switcher";
+import type { DashboardDataProfileId } from "@/lib/dashboard-data-profile";
 
 const navigation = [
   {
@@ -49,29 +51,43 @@ const navigation = [
   },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  dataProfile: DashboardDataProfileId;
+  peakoProfileAvailable: boolean;
+}
+
+export function AppSidebar({
+  dataProfile,
+  peakoProfileAvailable,
+}: AppSidebarProps) {
   const pathname = usePathname();
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <LayoutDashboard className="size-4" />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">SupaDash</span>
-                  <span className="text-xs text-muted-foreground">
-                    Social Analytics
-                  </span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="flex min-w-0 items-center gap-1.5 px-2 py-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:px-0">
+          <SidebarMenu className="min-w-0 flex-1">
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" asChild className="min-w-0">
+                <Link href="/dashboard">
+                  <div className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                    <LayoutDashboard className="size-4" />
+                  </div>
+                  <div className="flex min-w-0 flex-col gap-0.5 leading-none">
+                    <span className="truncate font-semibold">SupaDash</span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      Social Analytics
+                    </span>
+                  </div>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+          <DataProfileSwitcher
+            currentProfile={dataProfile}
+            peakoAvailable={peakoProfileAvailable}
+          />
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

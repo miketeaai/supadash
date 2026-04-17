@@ -29,7 +29,7 @@ export function useUserStats(userId?: number): UseUserStatsResult {
     try {
       const supabase = createClient();
       let query = supabase
-        .from("users")
+        .from("accounts")
         .select("followers, likes, saves, videos");
 
       if (userId) {

@@ -1,6 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+import {
+  DASHBOARD_DATA_PROFILE_COOKIE,
+  getServerDataSupabaseCredentials,
+  parseDashboardDataProfile,
+} from "@/lib/dashboard-data-profile";
+
 /**
  * Especially important if using Fluid compute: Don't put this client in a
  * global variable. Always create a new client within each function when using
@@ -8,10 +14,14 @@ import { cookies } from "next/headers";
  */
 export async function createClient() {
   const cookieStore = await cookies();
+  const profile = parseDashboardDataProfile(
+    cookieStore.get(DASHBOARD_DATA_PROFILE_COOKIE)?.value,
+  );
+  const { url, anonKey } = getServerDataSupabaseCredentials(profile);
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         getAll() {

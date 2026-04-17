@@ -48,7 +48,7 @@ async function AccountsContent() {
   const supabase = await createClient();
 
   const { data: accounts } = await supabase
-    .from("users")
+    .from("accounts")
     .select("*")
     .order("followers", { ascending: false });
 
