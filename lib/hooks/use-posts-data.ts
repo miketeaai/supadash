@@ -46,7 +46,7 @@ export function usePostsData(filters?: PostFilters): UsePostsDataResult {
     try {
       const supabase = createClient();
       let query = supabase
-        .from("social_media_data")
+        .from("social_media_posts")
         .select("*")
         .order("date", { ascending: false });
 

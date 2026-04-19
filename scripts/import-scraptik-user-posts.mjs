@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Import TikTok user posts from Scraptik (RapidAPI) into Supabase `social_media_data`.
+ * Import TikTok user posts from Scraptik (RapidAPI) into Supabase `social_media_posts`.
  *
  * Schema (align with Supabase Table Editor — repo reads these columns):
  *   post_id, date, views, likes, comments, shares, saves, platform, caption,
@@ -42,7 +42,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const RAPIDAPI_HOST_DEFAULT = "scraptik.p.rapidapi.com";
 
-/** NOT NULL columns on social_media_data not sourced from Scraptik (types must match Postgres). */
+/** NOT NULL columns on social_media_posts not sourced from Scraptik (types must match Postgres). */
 const SOCIAL_MEDIA_DATA_NOT_NULL_DEFAULTS = {
   ["interface"]: "yes",
   /** integer NOT NULL — 1 = enabled / yes */
@@ -320,7 +320,7 @@ async function main() {
     if (insertOnly) {
       const ids = chunk.map((r) => r.post_id);
       const { data: existing, error: selErr } = await supabase
-        .from("social_media_data")
+        .from("social_media_posts")
         .select("post_id")
         .in("post_id", ids);
 
@@ -336,7 +336,7 @@ async function main() {
         continue;
       }
 
-      const { error } = await supabase.from("social_media_data").insert(toInsert);
+      const { error } = await supabase.from("social_media_posts").insert(toInsert);
       if (error) {
         console.error("Insert failed:", error.message);
         process.exit(1);
@@ -344,13 +344,13 @@ async function main() {
       written += toInsert.length;
       console.error(`Chunk ${i / chunkSize + 1}: inserted ${toInsert.length} (skipped ${chunk.length - toInsert.length})`);
     } else {
-      const { error } = await supabase.from("social_media_data").upsert(chunk, {
+      const { error } = await supabase.from("social_media_posts").upsert(chunk, {
         onConflict: "post_id",
       });
       if (error) {
         console.error("Upsert failed:", error.message);
         console.error(
-          "Hint: add UNIQUE (post_id) on social_media_data, or run with --insert-only for new rows only."
+          "Hint: add UNIQUE (post_id) on social_media_posts, or run with --insert-only for new rows only."
         );
         process.exit(1);
       }

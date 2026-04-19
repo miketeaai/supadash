@@ -38,7 +38,7 @@ async function PostsContent() {
   const supabase = await createClient();
 
   const { data: posts } = await supabase
-    .from("social_media_data")
+    .from("social_media_posts")
     .select("*")
     .order("date", { ascending: false })
     .limit(100);
