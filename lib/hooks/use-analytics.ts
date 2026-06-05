@@ -50,7 +50,7 @@ export function useAnalytics(dateRange?: DateRange): UseAnalyticsResult {
     try {
       const supabase = createClient();
       let query = supabase
-        .from("social_media_posts")
+        .from("social_media_data")
         .select("date, views, likes, comments, shares, saves, platform, campaign, cost")
         .order("date", { ascending: true });
 

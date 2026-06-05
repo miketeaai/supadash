@@ -55,18 +55,18 @@ async function DashboardContent() {
 
   // Fetch ALL post metrics including campaign and cost
   const { data: allMetrics } = await supabase
-    .from("social_media_posts")
+    .from("social_media_data")
     .select("date, views, likes, comments, shares, saves, platform, campaign, cost")
     .order("date", { ascending: true });
 
   // Fetch platform breakdown from all posts
   const { data: platformData } = await supabase
-    .from("social_media_posts")
+    .from("social_media_data")
     .select("platform, views, likes");
 
   // Fetch recent posts (include campaign for filtering and links for embed)
   const { data: recentPosts } = await supabase
-    .from("social_media_posts")
+    .from("social_media_data")
     .select("post_id, date, views, likes, comments, shares, platform, caption, campaign, links")
     .order("date", { ascending: false })
     .limit(10);

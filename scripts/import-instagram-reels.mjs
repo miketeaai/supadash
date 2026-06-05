@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Import Instagram Reels from RapidAPI instagram-looter2 `/reels` into Supabase `social_media_posts`.
+ * Import Instagram Reels from RapidAPI instagram-looter2 `/reels` into Supabase `social_media_data`.
  *
  * API: GET https://instagram-looter2.p.rapidapi.com/reels?id=<pk>&count=<n>
  *   (optional pagination: max_id if returned in paging_info — varies by API version)
@@ -339,7 +339,7 @@ async function main() {
     if (insertOnly) {
       const ids = chunk.map((r) => r.post_id);
       const { data: existing, error: selErr } = await supabase
-        .from("social_media_posts")
+        .from("social_media_data")
         .select("post_id")
         .in("post_id", ids);
 
@@ -355,7 +355,7 @@ async function main() {
         continue;
       }
 
-      const { error } = await supabase.from("social_media_posts").insert(toInsert);
+      const { error } = await supabase.from("social_media_data").insert(toInsert);
       if (error) {
         console.error("Insert failed:", error.message);
         process.exit(1);
@@ -365,13 +365,13 @@ async function main() {
         `Chunk ${i / chunkSize + 1}: inserted ${toInsert.length} (skipped ${chunk.length - toInsert.length})`
       );
     } else {
-      const { error } = await supabase.from("social_media_posts").upsert(chunk, {
+      const { error } = await supabase.from("social_media_data").upsert(chunk, {
         onConflict: "post_id",
       });
       if (error) {
         console.error("Upsert failed:", error.message);
         console.error(
-          "Hint: add UNIQUE (post_id) on social_media_posts, or run with --insert-only."
+          "Hint: add UNIQUE (post_id) on social_media_data, or run with --insert-only."
         );
         process.exit(1);
       }

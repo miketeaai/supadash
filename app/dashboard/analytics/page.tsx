@@ -51,7 +51,7 @@ async function AnalyticsContent() {
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
   const { data: metrics } = await supabase
-    .from("social_media_posts")
+    .from("social_media_data")
     .select(
       "date, views, likes, comments, shares, saves, platform, campaign, cost"
     )
