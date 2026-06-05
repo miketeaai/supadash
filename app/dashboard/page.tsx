@@ -59,23 +59,17 @@ async function DashboardContent() {
     .select("date, views, likes, comments, shares, saves, platform, campaign, cost")
     .order("date", { ascending: true });
 
-  // Fetch platform breakdown from all posts
-  const { data: platformData } = await supabase
-    .from("social_media_data")
-    .select("platform, views, likes");
-
-  // Fetch recent posts (include campaign for filtering and links for embed)
+  // Fetch posts for recent list (client filters by date/campaign, then shows top 10)
   const { data: recentPosts } = await supabase
     .from("social_media_data")
     .select("post_id, date, views, likes, comments, shares, platform, caption, campaign, links")
     .order("date", { ascending: false })
-    .limit(10);
+    .limit(200);
 
   return (
     <DashboardClient
       allUsers={allUsers || []}
       allMetrics={allMetrics || []}
-      platformData={platformData || []}
       recentPosts={recentPosts || []}
     />
   );

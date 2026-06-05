@@ -1,12 +1,16 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { PerformanceChart } from "@/components/dashboard/performance-chart";
 import { PlatformBreakdown } from "@/components/dashboard/platform-breakdown";
 import { CampaignBreakdown } from "@/components/dashboard/campaign-breakdown";
 import { RecentPosts } from "@/components/dashboard/recent-posts";
-import { Badge } from "@/components/ui/badge";
+import {
+  DashboardDateFilter,
+  getLastNDaysRange,
+} from "@/components/dashboard/dashboard-date-filter";
 
 interface MetricData {
   date: string;
@@ -43,28 +47,44 @@ interface PostData {
 interface DashboardClientProps {
   allUsers: UserData[];
   allMetrics: MetricData[];
-  platformData: { platform: string; views: number; likes: number }[];
   recentPosts: PostData[];
+}
+
+function metricDateYMD(dateStr: string) {
+  return dateStr.slice(0, 10);
+}
+
+function inDateRange(dateStr: string, from: string, to: string) {
+  const d = metricDateYMD(dateStr);
+  return d >= from && d <= to;
 }
 
 export function DashboardClient({
   allUsers,
   allMetrics,
-  platformData,
   recentPosts,
 }: DashboardClientProps) {
+  const searchParams = useSearchParams();
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
 
-  // Filter metrics by selected campaign
-  const filteredMetrics = useMemo(() => {
-    if (!selectedCampaign) return allMetrics;
-    return allMetrics.filter((m) => m.campaign === selectedCampaign);
-  }, [allMetrics, selectedCampaign]);
+  const rangeAll = searchParams.get("range") === "all";
+  const urlFrom = searchParams.get("from")?.trim() ?? "";
+  const urlTo = searchParams.get("to")?.trim() ?? "";
+  const fallback30 = getLastNDaysRange(30);
+  const rangeFrom = rangeAll ? "" : urlFrom || fallback30.from;
+  const rangeTo = rangeAll ? "" : urlTo || fallback30.to;
 
-  // Filter platform data by campaign
+  const dateFilteredMetrics = useMemo(() => {
+    if (rangeAll) return allMetrics;
+    return allMetrics.filter((m) => inDateRange(m.date, rangeFrom, rangeTo));
+  }, [allMetrics, rangeAll, rangeFrom, rangeTo]);
+
+  const filteredMetrics = useMemo(() => {
+    if (!selectedCampaign) return dateFilteredMetrics;
+    return dateFilteredMetrics.filter((m) => m.campaign === selectedCampaign);
+  }, [dateFilteredMetrics, selectedCampaign]);
+
   const filteredPlatformData = useMemo(() => {
-    if (!selectedCampaign) return platformData;
-    // Recalculate platform breakdown from filtered metrics
     const platformMap = new Map<string, { views: number; likes: number }>();
     filteredMetrics.forEach((m) => {
       const existing = platformMap.get(m.platform) || { views: 0, likes: 0 };
@@ -77,21 +97,25 @@ export function DashboardClient({
       platform,
       ...data,
     }));
-  }, [filteredMetrics, platformData, selectedCampaign]);
+  }, [filteredMetrics]);
 
-  // Filter recent posts by campaign
   const filteredRecentPosts = useMemo(() => {
-    if (!selectedCampaign) return recentPosts;
-    return recentPosts.filter((p) => p.campaign === selectedCampaign);
-  }, [recentPosts, selectedCampaign]);
+    let posts = recentPosts;
+    if (!rangeAll) {
+      posts = posts.filter((p) => inDateRange(p.date, rangeFrom, rangeTo));
+    }
+    if (selectedCampaign) {
+      posts = posts.filter((p) => p.campaign === selectedCampaign);
+    }
+    return posts.slice(0, 10);
+  }, [recentPosts, rangeAll, rangeFrom, rangeTo, selectedCampaign]);
 
-  // Aggregate campaign data for breakdown
   const campaignData = useMemo(() => {
     const campaignMap = new Map<
       string,
       { views: number; posts: number; cost: number }
     >();
-    allMetrics.forEach((m) => {
+    dateFilteredMetrics.forEach((m) => {
       if (m.campaign && m.campaign.trim() !== "") {
         const existing = campaignMap.get(m.campaign) || {
           views: 0,
@@ -109,9 +133,8 @@ export function DashboardClient({
       campaign,
       ...data,
     }));
-  }, [allMetrics]);
+  }, [dateFilteredMetrics]);
 
-  // Calculate aggregated stats (filtered)
   const aggregatedStats = useMemo(() => {
     const userStats = allUsers.reduce(
       (acc, user) => ({
@@ -151,10 +174,11 @@ export function DashboardClient({
       accounts: allUsers.length,
       totalPosts: filteredMetrics.length,
     };
-  }, [allUsers, filteredMetrics, selectedCampaign]);
+  }, [allUsers, filteredMetrics]);
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
+      <DashboardDateFilter />
       <StatsCards stats={aggregatedStats} />
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -179,4 +203,3 @@ export function DashboardClient({
     </div>
   );
 }
-

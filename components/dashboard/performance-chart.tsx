@@ -45,18 +45,23 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+function metricDateYMD(dateStr: string) {
+  return dateStr.slice(0, 10);
+}
+
 export function PerformanceChart({ data }: PerformanceChartProps) {
   // Aggregate data by date
   const aggregatedData = data.reduce(
     (acc, item) => {
-      const existing = acc.find((d) => d.date === item.date);
+      const day = metricDateYMD(item.date);
+      const existing = acc.find((d) => d.date === day);
       if (existing) {
         existing.views += item.views;
         existing.likes += item.likes;
         existing.comments += item.comments;
       } else {
         acc.push({
-          date: item.date,
+          date: day,
           views: item.views,
           likes: item.likes,
           comments: item.comments,
